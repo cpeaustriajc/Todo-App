@@ -32,14 +32,177 @@
     <div class="col-sm-8" *ngIf="selectedList">
       <div class="clearfix">
         <h2 class="float-start">{{ selectedList.title }}</h2>
-        <button id="listOptions" class="btn btn-default float-end" title="List Options..."
-          (click)="showListOptionsModal(listOptionsModalTemplate)">
-          <i class="bi bi-three-dots-vertical"></i>
-        </button>
+        <div class="float-end">
+          <button class="btn btn-outline-info btn-sm me-2"
+                  (click)="toggleBulkMode()"
+                  [class.active]="bulkMode">
+            <i class="bi bi-check2-square"></i> Bulk Edit
+          </button>
+          <button id="listOptions" class="btn btn-default" title="List Options..."
+            (click)="showListOptionsModal(listOptionsModalTemplate)">
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+        </div>
       </div>
+
+      <!-- Search and Filters Section -->
+      <div class="mb-3">
+        <!-- Text Search -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Search:</h6>
+            <button class="btn btn-sm btn-outline-secondary"
+                    (click)="toggleSearchOptions()"
+                    [class.active]="showSearchOptions">
+              <i class="bi bi-gear"></i> Options
+            </button>
+          </div>
+          <div class="input-group">
+            <input type="text"
+                   id="search-input"
+                   class="form-control"
+                   placeholder="Search todos by title, note, or tags... (Ctrl+F)"
+                   [(ngModel)]="searchTerm"
+                   (input)="searchTerm = searchTerm">
+            <button class="btn btn-outline-secondary"
+                    type="button"
+                    *ngIf="searchTerm"
+                    (click)="clearSearch()"
+                    title="Clear search">
+              <i class="bi bi-x"></i>
+            </button>
+            <button class="btn btn-outline-primary" type="button">
+              <i class="bi bi-search"></i>
+            </button>
+          </div>
+
+          <!-- Advanced Search Options -->
+          <div *ngIf="showSearchOptions" class="mt-2 p-2 border rounded bg-light">
+            <small class="text-muted d-block mb-2">Search in:</small>
+            <div class="d-flex gap-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="searchTitle" [(ngModel)]="searchInTitle">
+                <label class="form-check-label" for="searchTitle">
+                  Title
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="searchNote" [(ngModel)]="searchInNote">
+                <label class="form-check-label" for="searchNote">
+                  Notes
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="searchTags" [(ngModel)]="searchInTags">
+                <label class="form-check-label" for="searchTags">
+                  Tags
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tag filters and shortcuts -->
+        <div>
+          <h6>Filter by Tags:</h6>
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <!-- Most used tags shortcuts -->
+            <span *ngFor="let tag of getMostUsedTags()"
+                  class="badge badge-pill cursor-pointer"
+                  [style.background-color]="tag.color"
+                  [class.selected]="isTagSelected(tag)"
+                  (click)="toggleTagFilter(tag)">
+              {{ tag.name }} ({{ tag.usageCount }})
+            </span>
+
+            <!-- Clear tag filters button -->
+            <button *ngIf="selectedTags.length > 0"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="clearTagFilters()">
+              Clear Tag Filters
+            </button>
+          </div>
+
+          <!-- Selected filters display -->
+          <div *ngIf="selectedTags.length > 0" class="small text-muted">
+            Active tag filters:
+            <span *ngFor="let tag of selectedTags; let last = last">
+              {{ tag.name }}<span *ngIf="!last">, </span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Clear all filters -->
+        <div *ngIf="searchTerm || selectedTags.length > 0" class="mt-2">
+          <button class="btn btn-sm btn-outline-danger" (click)="clearAllFilters()">
+            Clear All Filters (Esc)
+          </button>
+          <small class="text-muted ms-2">
+            Showing {{ filteredTodoItems().length }} of {{ selectedList?.items?.length || 0 }} items
+          </small>
+        </div>
+
+        <!-- Keyboard shortcuts help -->
+        <div class="mt-2">
+          <small class="text-muted">
+            <i class="bi bi-info-circle"></i>
+            Shortcuts: Ctrl+F (search), Esc (clear), Ctrl+A (select all in bulk mode)
+          </small>
+        </div>
+      </div>
+
+      <!-- Bulk Operations Panel -->
+      <div *ngIf="bulkMode" class="alert alert-info">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span>
+            <strong>Bulk Edit Mode</strong> - {{ getSelectedItemsCount() }} item(s) selected
+          </span>
+          <div>
+            <button class="btn btn-sm btn-outline-primary me-2" (click)="selectAllItems()">
+              Select All
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="clearSelection()">
+              Clear Selection
+            </button>
+          </div>
+        </div>
+
+        <!-- Bulk tag operations -->
+        <div *ngIf="getSelectedItemsCount() > 0">
+          <label class="form-label">Apply tags to selected items:</label>
+          <div class="d-flex flex-wrap gap-1">
+            <span *ngFor="let tag of availableTags"
+                  class="badge cursor-pointer d-inline-flex align-items-center"
+                  [style.background-color]="tag.color"
+                  title="Click + to add or - to remove from selected items">
+              {{ tag.name }}
+              <button class="btn btn-sm ms-1 p-0"
+                      (click)="addTagToSelectedItems(tag)"
+                      title="Add to selected"
+                      style="background: none; border: none; color: inherit; font-size: 0.8em;">
+                <i class="bi bi-plus-circle"></i>
+              </button>
+              <button class="btn btn-sm ms-1 p-0"
+                      (click)="removeTagFromSelectedItems(tag)"
+                      title="Remove from selected"
+                      style="background: none; border: none; color: inherit; font-size: 0.8em;">
+                <i class="bi bi-dash-circle"></i>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+
       <ul id="todo-items" class="list-group mb-2">
-        <li class="list-group-item" *ngFor="let item of selectedList.items; index as i">
+        <li class="list-group-item" *ngFor="let item of filteredTodoItems(); index as i">
           <div class="d-flex">
+            <!-- Bulk selection checkbox -->
+            <div *ngIf="bulkMode" class="me-2">
+              <input type="checkbox"
+                     [checked]="isItemSelected(item.id)"
+                     (change)="toggleItemSelection(item.id)"
+                     class="form-check-input">
+            </div>
             <div class="todo-item-checkbox">
               <input type="checkbox" [(ngModel)]="item.done" (change)="updateItem(item)" />
             </div>
@@ -50,6 +213,19 @@
               <div class="todo-item-title" *ngIf="item != selectedItem" [ngClass]="{ 'done-todo': item.done }"
                 (click)="editItem(item, 'itemTitle' + i)" class="form-control item-input-control">
                 <span>{{ item.title }}</span>
+
+                <!-- Display item tags -->
+                <div *ngIf="item.tags && item.tags.length > 0" class="mt-1">
+                  <span *ngFor="let tag of item.tags"
+                        class="badge badge-sm me-1"
+                        [style.background-color]="tag.color">
+                    {{ tag.name }}
+                    <button class="btn-close btn-close-white btn-close-sm ms-1"
+                            (click)="removeTagFromItem(item, tag)"
+                            title="Remove tag">
+                    </button>
+                  </span>
+                </div>
               </div>
             </div>
             <div class="todo-item-commands">
@@ -126,6 +302,69 @@
       <div class="form-group">
         <label for="note">Note</label>
         <textarea id="note" class="form-control" rows="3" formControlName="note"></textarea>
+      </div>
+
+      <!-- Tag Management Section -->
+      <div class="form-group">
+        <label>Tags</label>
+
+        <!-- Current tags -->
+        <div *ngIf="selectedItem?.tags && selectedItem.tags.length > 0" class="mb-2">
+          <span *ngFor="let tag of selectedItem.tags"
+                class="badge me-1 mb-1"
+                [style.background-color]="tag.color">
+            {{ tag.name }}
+            <button class="btn-close btn-close-white btn-close-sm ms-1"
+                    (click)="removeTagFromItem(selectedItem, tag)"
+                    title="Remove tag">
+            </button>
+          </span>
+        </div>
+
+        <!-- Add new tag section -->
+        <div class="input-group">
+          <input type="text"
+                 class="form-control form-control-sm"
+                 placeholder="Search or create new tag..."
+                 [(ngModel)]="tagSearchTerm"
+                 (input)="filterTags()"
+                 (focus)="showTagDropdown = true">
+          <button class="btn btn-outline-secondary btn-sm"
+                  type="button"
+                  (click)="toggleTagDropdown()">
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+
+        <!-- Tag dropdown -->
+        <div *ngIf="showTagDropdown" class="border rounded mt-1 p-2 bg-light" style="max-height: 200px; overflow-y: auto;">
+          <!-- Create new tag option -->
+          <div *ngIf="shouldShowCreateTag()"
+               class="mb-2">
+            <button class="btn btn-sm btn-primary w-100"
+                    (click)="createTagFromSearch()">
+              Create "{{ tagSearchTerm }}"
+            </button>
+          </div>
+
+          <!-- Existing tags -->
+          <div *ngFor="let tag of filteredTags"
+               class="d-flex align-items-center justify-content-between mb-1">
+            <span class="badge"
+                  [style.background-color]="tag.color">
+              {{ tag.name }}
+            </span>
+            <button class="btn btn-sm btn-outline-primary"
+                    (click)="selectTag(tag)"
+                    [disabled]="isTagAlreadyAdded(tag)">
+              {{ getTagButtonText(tag) }}
+            </button>
+          </div>
+
+          <div *ngIf="filteredTags.length === 0 && tagSearchTerm" class="text-muted small">
+            No tags found. Create a new one above.
+          </div>
+        </div>
       </div>
     </form>
     <div *ngIf="debug">

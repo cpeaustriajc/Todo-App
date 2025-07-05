@@ -36,3 +36,94 @@
 .modal-footer {
   display: block;
 }
+
+/* Tag-related styles */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.badge.selected {
+  opacity: 0.7;
+  box-shadow: 0 0 0 2px #007bff;
+}
+
+.badge .btn-close {
+  font-size: 0.6em;
+}
+
+.tag-dropdown {
+  position: relative;
+}
+
+.tag-item {
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin: 2px;
+  display: inline-block;
+}
+
+.tag-filter {
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.tag-filter:hover {
+  border-color: #007bff;
+}
+
+.tag-filter.active {
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.gap-2 > * {
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.gap-2 > *:last-child {
+  margin-right: 0;
+}
+
+/* Search and bulk operations */
+.search-highlight {
+  background-color: yellow;
+}
+
+.bulk-operations {
+  border: 2px dashed #007bff;
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.btn.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.form-check-input {
+  margin-top: 0.25rem;
+}
+
+/* Improved tag interactions */
+.badge:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+.badge .btn-close:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Search input styling */
+.input-group .btn-outline-secondary:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+.input-group .btn-outline-primary:hover {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
