@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Todo_App.Application.Common.Mappings;
+using Todo_App.Application.Common.Models;
 using Todo_App.Domain.Entities;
 
 namespace Todo_App.Application.TodoLists.Queries.GetTodos;
@@ -18,9 +19,12 @@ public class TodoItemDto : IMapFrom<TodoItem>
 
     public string? Note { get; set; }
 
+    public IList<TagDto> Tags { get; set; } = new List<TagDto>();
+
     public void Mapping(Profile profile)
     {
         profile.CreateMap<TodoItem, TodoItemDto>()
-            .ForMember(d => d.Priority, opt => opt.MapFrom(s => (int)s.Priority));
+            .ForMember(d => d.Priority, opt => opt.MapFrom(s => (int)s.Priority))
+            .ForMember(d => d.Tags, opt => opt.MapFrom(s => s.TodoItemTags.Select(tt => tt.Tag)));
     }
 }
