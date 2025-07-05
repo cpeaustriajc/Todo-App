@@ -28,11 +28,24 @@ export class TodoComponent implements OnInit {
   listOptionsModalRef: BsModalRef;
   deleteListModalRef: BsModalRef;
   itemDetailsModalRef: BsModalRef;
+
+  availableColours = [
+    { name: 'White', code: '#FFFFFF' },
+    { name: 'Red', code: '#FF5733' },
+    { name: 'Orange', code: '#FFC300' },
+    { name: 'Yellow', code: '#FFFF66' },
+    { name: 'Green', code: '#CCFF99' },
+    { name: 'Blue', code: '#6666FF' },
+    { name: 'Purple', code: '#9966CC' },
+    { name: 'Grey', code: '#999999' }
+  ];
+
   itemDetailsFormGroup = this.fb.group({
     id: [null],
     listId: [null],
     priority: [''],
-    note: ['']
+    note: [''],
+    colour: ['']
   });
 
 
@@ -146,6 +159,10 @@ export class TodoComponent implements OnInit {
     });
   }
 
+  selectColor(colorCode: string): void {
+    this.itemDetailsFormGroup.patchValue({ colour: colorCode });
+  }
+
   updateItemDetails(): void {
     const item = new UpdateTodoItemDetailCommand(this.itemDetailsFormGroup.value);
     this.itemsClient.updateItemDetails(this.selectedItem.id, item).subscribe(
@@ -163,6 +180,7 @@ export class TodoComponent implements OnInit {
 
         this.selectedItem.priority = item.priority;
         this.selectedItem.note = item.note;
+        this.selectedItem.colour = item.colour;
         this.itemDetailsModalRef.hide();
         this.itemDetailsFormGroup.reset();
       },
@@ -176,7 +194,8 @@ export class TodoComponent implements OnInit {
       listId: this.selectedList.id,
       priority: this.priorityLevels[0].value,
       title: '',
-      done: false
+      done: false,
+      colour: '#FFFFFF'
     } as TodoItemDto;
 
     this.selectedList.items.push(item);

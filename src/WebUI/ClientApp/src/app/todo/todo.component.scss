@@ -33,6 +33,24 @@
   padding-top: 4px;
 }
 
+.color-option {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  transition: border-color 0.3s;
+
+  &:hover {
+    border-color: #007bff;
+  }
+
+  &.selected {
+    border-color: #007bff;
+    border-width: 3px;
+  }
+}
+
 .modal-footer {
   display: block;
 }

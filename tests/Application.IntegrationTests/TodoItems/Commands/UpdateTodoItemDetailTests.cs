@@ -7,6 +7,8 @@ using Todo_App.Application.TodoItems.Commands.UpdateTodoItemDetail;
 using Todo_App.Application.TodoLists.Commands.CreateTodoList;
 using Todo_App.Domain.Entities;
 using Todo_App.Domain.Enums;
+using Todo_App.Domain.ValueObjects;
+using Todo_App.Domain.Exceptions;
 
 namespace Todo_App.Application.IntegrationTests.TodoItems.Commands;
 
@@ -57,5 +59,64 @@ public class UpdateTodoItemDetailTests : BaseTestFixture
         item.LastModifiedBy.Should().Be(userId);
         item.LastModified.Should().NotBeNull();
         item.LastModified.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMilliseconds(10000));
+    }
+
+    [Test]
+    public async Task ShouldUpdateTodoItemColour()
+    {
+        var userId = await RunAsDefaultUserAsync();
+
+        var listId = await SendAsync(new CreateTodoListCommand
+        {
+            Title = "New List"
+        });
+
+        var itemId = await SendAsync(new CreateTodoItemCommand
+        {
+            ListId = listId,
+            Title = "New Item"
+        });
+
+        var command = new UpdateTodoItemDetailCommand
+        {
+            Id = itemId,
+            ListId = listId,
+            Colour = "#6666FF"
+        };
+
+        await SendAsync(command);
+
+        var item = await FindAsync<TodoItem>(itemId);
+
+        item.Should().NotBeNull();
+        item!.Colour.Code.Should().Be("#6666FF");
+        item.LastModifiedBy.Should().NotBeNull();
+        item.LastModifiedBy.Should().Be(userId);
+    }
+
+    [Test]
+    public async Task ShouldThrowExceptionForInvalidColour()
+    {
+        var userId = await RunAsDefaultUserAsync();
+
+        var listId = await SendAsync(new CreateTodoListCommand
+        {
+            Title = "New List"
+        });
+
+        var itemId = await SendAsync(new CreateTodoItemCommand
+        {
+            ListId = listId,
+            Title = "New Item"
+        });
+
+        var command = new UpdateTodoItemDetailCommand
+        {
+            Id = itemId,
+            ListId = listId,
+            Colour = "#INVALID"
+        };
+
+        await FluentActions.Invoking(() => SendAsync(command)).Should().ThrowAsync<UnsupportedColourException>();
     }
 }
