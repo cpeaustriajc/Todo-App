@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Todo_App.Application.Common.Models;
 using Todo_App.Application.TodoLists.Commands.CreateTodoList;
 using Todo_App.Application.TodoLists.Commands.DeleteTodoList;
+using Todo_App.Application.TodoLists.Commands.RestoreTodoList;
+using Todo_App.Application.TodoLists.Commands.PurgeTodoList;
 using Todo_App.Application.TodoLists.Commands.UpdateTodoList;
 using Todo_App.Application.TodoLists.Queries.ExportTodos;
 using Todo_App.Application.TodoLists.Queries.GetTodos;
+using Todo_App.Application.TodoLists.Queries.GetDeletedTodoLists;
 
 namespace Todo_App.WebUI.Controllers;
 
@@ -46,6 +50,28 @@ public class TodoListsController : ApiControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         await Mediator.Send(new DeleteTodoListCommand(id));
+
+        return NoContent();
+    }
+
+    [HttpGet("trash")]
+    public async Task<ActionResult<PaginatedList<TodoListDto>>> GetDeletedTodoLists([FromQuery] GetDeletedTodoListsQuery query)
+    {
+        return await Mediator.Send(query);
+    }
+
+    [HttpPatch("{id}/restore")]
+    public async Task<ActionResult> Restore(int id)
+    {
+        await Mediator.Send(new RestoreTodoListCommand(id));
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/purge")]
+    public async Task<ActionResult> Purge(int id)
+    {
+        await Mediator.Send(new PurgeTodoListCommand(id));
 
         return NoContent();
     }

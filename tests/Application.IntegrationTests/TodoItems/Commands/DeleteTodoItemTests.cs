@@ -5,6 +5,7 @@ using Todo_App.Application.TodoItems.Commands.CreateTodoItem;
 using Todo_App.Application.TodoItems.Commands.DeleteTodoItem;
 using Todo_App.Application.TodoLists.Commands.CreateTodoList;
 using Todo_App.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Todo_App.Application.IntegrationTests.TodoItems.Commands;
 
@@ -22,7 +23,7 @@ public class DeleteTodoItemTests : BaseTestFixture
     }
 
     [Test]
-    public async Task ShouldDeleteTodoItem()
+    public async Task ShouldSoftDeleteTodoItem()
     {
         var listId = await SendAsync(new CreateTodoListCommand
         {
@@ -37,8 +38,32 @@ public class DeleteTodoItemTests : BaseTestFixture
 
         await SendAsync(new DeleteTodoItemCommand(itemId));
 
-        var item = await FindAsync<TodoItem>(itemId);
+        var item = await FindIncludingSoftDeletedAsync<TodoItem>(itemId);
 
-        item.Should().BeNull();
+        item.Should().NotBeNull();
+        item.IsDeleted.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task SoftDeletedItemShouldNotAppearInQueries()
+    {
+        var listId = await SendAsync(new CreateTodoListCommand
+        {
+            Title = "New List"
+        });
+
+        var itemId = await SendAsync(new CreateTodoItemCommand
+        {
+            ListId = listId,
+            Title = "New Item"
+        });
+
+        var itemCountBefore = await CountAsync<TodoItem>();
+
+        await SendAsync(new DeleteTodoItemCommand(itemId));
+
+        var itemCountAfter = await CountAsync<TodoItem>();
+
+        itemCountAfter.Should().Be(itemCountBefore - 1);
     }
 }

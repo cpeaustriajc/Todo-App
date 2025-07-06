@@ -1,0 +1,102 @@
+.card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header h4 {
+  margin: 0;
+  color: #495057;
+}
+
+.list-group-item {
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+}
+
+.list-group-item:first-child {
+  border-top: none;
+}
+
+.list-group-item:last-child {
+  border-bottom: none;
+}
+
+.btn-group .btn {
+  border-radius: 0.25rem;
+  margin-left: 0.25rem;
+}
+
+.btn-group .btn:first-child {
+  margin-left: 0;
+}
+
+.display-4 {
+  opacity: 0.5;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+.modal-header .modal-title {
+  font-weight: 500;
+}
+
+.alert {
+  margin-bottom: 0;
+}
+
+.btn-outline-success:hover {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+/* Loading state */
+.loading-container {
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Empty state improvements */
+.text-center.py-4 {
+  padding: 2rem !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-group .btn {
+    margin-left: 0;
+    margin-top: 0.25rem;
+    border-radius: 0.25rem !important;
+  }
+  
+  .btn-group .btn:first-child {
+    margin-top: 0;
+  }
+  
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .d-flex.justify-content-between > div:last-child {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+}

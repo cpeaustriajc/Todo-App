@@ -2,9 +2,12 @@
 using Todo_App.Application.Common.Models;
 using Todo_App.Application.TodoItems.Commands.CreateTodoItem;
 using Todo_App.Application.TodoItems.Commands.DeleteTodoItem;
+using Todo_App.Application.TodoItems.Commands.RestoreTodoItem;
+using Todo_App.Application.TodoItems.Commands.PurgeTodoItem;
 using Todo_App.Application.TodoItems.Commands.UpdateTodoItem;
 using Todo_App.Application.TodoItems.Commands.UpdateTodoItemDetail;
 using Todo_App.Application.TodoItems.Queries.GetTodoItemsWithPagination;
+using Todo_App.Application.TodoItems.Queries.GetDeletedTodoItems;
 
 namespace Todo_App.WebUI.Controllers;
 
@@ -52,6 +55,28 @@ public class TodoItemsController : ApiControllerBase
     public async Task<ActionResult> Delete(int id)
     {
         await Mediator.Send(new DeleteTodoItemCommand(id));
+
+        return NoContent();
+    }
+
+    [HttpGet("trash")]
+    public async Task<ActionResult<PaginatedList<TodoItemBriefDto>>> GetDeletedTodoItems([FromQuery] GetDeletedTodoItemsQuery query)
+    {
+        return await Mediator.Send(query);
+    }
+
+    [HttpPatch("{id}/restore")]
+    public async Task<ActionResult> Restore(int id)
+    {
+        await Mediator.Send(new RestoreTodoItemCommand(id));
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/purge")]
+    public async Task<ActionResult> Purge(int id)
+    {
+        await Mediator.Send(new PurgeTodoItemCommand(id));
 
         return NoContent();
     }

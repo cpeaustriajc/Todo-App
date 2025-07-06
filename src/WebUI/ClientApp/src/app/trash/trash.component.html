@@ -1,0 +1,147 @@
+<h1>Trash</h1>
+
+<p>Manage your deleted todo lists and items. You can restore them or permanently delete them.</p>
+
+<p *ngIf="loading"><em>Loading...</em></p>
+
+<div *ngIf="!loading">
+  <div class="row">
+    <!-- Deleted Lists Column -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4><i class="bi bi-folder-minus"></i> Deleted Todo Lists ({{ deletedLists.length }})</h4>
+        </div>
+        <div class="card-body">
+          <div *ngIf="deletedLists.length === 0" class="text-muted text-center py-4">
+            <i class="bi bi-folder-x display-4 d-block mb-2"></i>
+            No deleted lists
+          </div>
+          <div *ngIf="deletedLists.length > 0">
+            <div class="list-group">
+              <div *ngFor="let list of deletedLists" class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">{{ list.title }}</h6>
+                    <small class="text-muted">
+                      <i class="bi bi-folder-minus"></i> 
+                      Todo List
+                    </small>
+                  </div>
+                  <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-success" 
+                            (click)="confirmRestore(list, 'list', confirmActionTemplate)"
+                            title="Restore this list">
+                      <i class="bi bi-arrow-clockwise"></i> Restore
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" 
+                            (click)="confirmPurge(list, 'list', confirmActionTemplate)"
+                            title="Permanently delete this list">
+                      <i class="bi bi-trash3"></i> Delete Forever
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deleted Items Column -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4><i class="bi bi-check2-square"></i> Deleted Todo Items ({{ deletedItems.length }})</h4>
+        </div>
+        <div class="card-body">
+          <div *ngIf="deletedItems.length === 0" class="text-muted text-center py-4">
+            <i class="bi bi-check2-square display-4 d-block mb-2"></i>
+            No deleted items
+          </div>
+          <div *ngIf="deletedItems.length > 0">
+            <div class="list-group">
+              <div *ngFor="let item of deletedItems" class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">{{ item.title }}</h6>
+                    <small class="text-muted">
+                      <i class="bi bi-check2-square"></i> 
+                      Todo Item
+                    </small>
+                  </div>
+                  <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-success" 
+                            (click)="confirmRestore(item, 'item', confirmActionTemplate)"
+                            title="Restore this item">
+                      <i class="bi bi-arrow-clockwise"></i> Restore
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" 
+                            (click)="confirmPurge(item, 'item', confirmActionTemplate)"
+                            title="Permanently delete this item">
+                      <i class="bi bi-trash3"></i> Delete Forever
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty Trash Button -->
+  <div class="text-center mt-4" *ngIf="deletedLists.length > 0 || deletedItems.length > 0">
+    <button class="btn btn-outline-secondary" (click)="loadTrashData()">
+      <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<ng-template #confirmActionTemplate>
+  <div class="modal-header">
+    <h4 class="modal-title">
+      <span *ngIf="selectedAction === 'restore'">
+        <i class="bi bi-arrow-clockwise"></i> Restore {{ getItemTypeName() }}
+      </span>
+      <span *ngIf="selectedAction === 'purge'">
+        <i class="bi bi-exclamation-triangle-fill text-danger"></i> Permanently Delete {{ getItemTypeName() }}
+      </span>
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="confirmModalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div *ngIf="selectedAction === 'restore'">
+      <p>Are you sure you want to restore this {{ getItemTypeName().toLowerCase() }}?</p>
+      <div class="alert alert-info">
+        <strong>"{{ selectedItem?.title }}"</strong> will be restored and will appear in your active todos.
+      </div>
+    </div>
+    <div *ngIf="selectedAction === 'purge'">
+      <p class="text-danger">
+        <strong>Warning:</strong> This action cannot be undone!
+      </p>
+      <p>Are you sure you want to permanently delete this {{ getItemTypeName().toLowerCase() }}?</p>
+      <div class="alert alert-danger">
+        <strong>"{{ selectedItem?.title }}"</strong> will be permanently deleted and cannot be recovered.
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="confirmModalRef.hide()">Cancel</button>
+    <button *ngIf="selectedAction === 'restore'" 
+            class="btn btn-success" 
+            (click)="executeAction()">
+      <i class="bi bi-arrow-clockwise"></i> Restore
+    </button>
+    <button *ngIf="selectedAction === 'purge'" 
+            class="btn btn-danger" 
+            (click)="executeAction()">
+      <i class="bi bi-trash3"></i> Delete Forever
+    </button>
+  </div>
+</ng-template>

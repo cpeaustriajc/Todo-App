@@ -27,5 +27,7 @@ public class TodoItem : BaseAuditableEntity
         }
     }
 
+    public bool IsDeleted { get; set; }
+
     public TodoList List { get; set; } = null!;
 }

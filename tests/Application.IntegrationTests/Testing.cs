@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Respawn;
+using Todo_App.Domain.Entities;
 using Todo_App.Infrastructure.Identity;
 using Todo_App.Infrastructure.Persistence;
 
@@ -106,6 +107,37 @@ public partial class Testing
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         return await context.FindAsync<TEntity>(keyValues);
+    }
+
+    public static async Task<TEntity?> FindIncludingSoftDeletedAsync<TEntity>(params object[] keyValues)
+        where TEntity : class
+    {
+        using var scope = _scopeFactory.CreateScope();
+
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        // First check if the entity exists normally (this will use query filters)
+        var entity = await context.FindAsync<TEntity>(keyValues);
+        if (entity != null)
+            return entity;
+
+        // If not found, it might be soft deleted, so search without query filters
+        // For TodoItem and TodoList, we know the primary key is Id (int)
+        if (typeof(TEntity) == typeof(TodoItem) && keyValues.Length == 1)
+        {
+            return await context.Set<TEntity>()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == (int)keyValues[0]) as TEntity;
+        }
+        
+        if (typeof(TEntity) == typeof(TodoList) && keyValues.Length == 1)
+        {
+            return await context.Set<TEntity>()
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == (int)keyValues[0]) as TEntity;
+        }
+
+        return null;
     }
 
     public static async Task AddAsync<TEntity>(TEntity entity)
