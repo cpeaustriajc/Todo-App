@@ -12,6 +12,11 @@ public class TodoListConfiguration : IEntityTypeConfiguration<TodoList>
             .HasMaxLength(200)
             .IsRequired();
 
+        builder.Property(t => t.IsDeleted)
+            .HasDefaultValue(false);
+
+        builder.HasQueryFilter(t => !t.IsDeleted);
+
         builder
             .OwnsOne(b => b.Colour);
     }
